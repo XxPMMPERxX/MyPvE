@@ -1,0 +1,6 @@
+name: MyPvE
+main: soradore\mypve\Main
+author: soradore
+load: POSTWORLD
+version: 1.0.0-dev
+api: [5.0.0]

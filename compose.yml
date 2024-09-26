@@ -1,0 +1,11 @@
+services:
+  pmmp:
+    image: pmmp/pocketmine-mp:latest
+    ports:
+      - ${PORT:-19132}:19132/udp
+      - ${QUERY_PORT:-19132}:19132
+    volumes:
+      - .:/plugins/${PLUGIN_NAME:-MyPlugin}
+      - ./data:/data
+    environment:
+      - POCKETMINE_PLUGINS=DevTools
