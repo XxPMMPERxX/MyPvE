@@ -38,11 +38,12 @@ class Main extends PluginBase
     protected static function registerItems()
     {
         ItemRegister::register(
-            new class(new ItemIdentifier(ItemTypeIds::newId()), "Skeleton Spawn Egg") extends SpawnEgg{
-			    public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch) : Entity{
-				    return new Skeleton(Location::fromObject($pos, $world, $yaw, $pitch));
-			    }
-		    },
+            new class(new ItemIdentifier(ItemTypeIds::newId()), "Skeleton Spawn Egg") extends SpawnEgg {
+                public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch): Entity
+                {
+                    return new Skeleton(Location::fromObject($pos, $world, $yaw, $pitch));
+                }
+            },
             ItemTypeNames::SKELETON_SPAWN_EGG,
             'skeleton_spawn_egg',
             true,
