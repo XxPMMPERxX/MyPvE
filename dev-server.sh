@@ -16,4 +16,4 @@ else
     exit 1
 fi
 
-$COMPOSE run ${CONTAINER_NAME:-pmmp} /usr/bin/start-pocketmine
+$COMPOSE run --rm ${CONTAINER_NAME:-pmmp} /usr/bin/start-pocketmine
