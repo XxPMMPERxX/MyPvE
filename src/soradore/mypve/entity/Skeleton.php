@@ -85,7 +85,7 @@ class Skeleton extends Living
         // プレイヤーがいなくなったらターゲットをnullに
         if($target->isClosed()) {
             $this->setTarget(null);
-            return;
+            return false;
         }
 
         if(!($target instanceof Player))
