@@ -8,5 +8,9 @@ services:
     volumes:
       - .:/plugins/${PLUGIN_NAME:-MyPlugin}
       - ./data:/data
+      - plugins:/plugins
     environment:
       - POCKETMINE_PLUGINS=DevTools
+
+volumes:
+  plugins:
