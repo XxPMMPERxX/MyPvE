@@ -62,10 +62,11 @@ class Skeleton extends Living
             );
         }
 
-        if($this->attkTime > 0)
+        if($this->attkTime > 0) {
             return false;
-        else
+        } else {
             $this->attkTime = 0;
+        }
         
         if($this->getTarget() == null) {
             if ($this->isNeutral) return $hasUpdate;//中立の状態なら処理を終了
@@ -135,6 +136,7 @@ class Skeleton extends Living
         }
 
         parent::attack($source);
+        
         if($this->attkTime <= 0) {
             $this->attkTime = 15;
         }
