@@ -11,7 +11,7 @@ docker run --rm --interactive --tty --volume .:/app composer install
 cp .env.example .env
 ```
 
-3. 開発サーバ起動
+3. 開発サーバ起動  
     **Windows**
     ```ps
     ./dev-server.ps1
