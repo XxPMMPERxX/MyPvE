@@ -30,4 +30,4 @@ if ($null -eq $CONTAINER_NAME) {
     $CONTAINER_NAME="pmmp"
 }
 
-Invoke-Expression "${COMPOSE} run --rm ${CONTAINER_NAME} /usr/bin/start-pocketmine"
+Invoke-Expression "${COMPOSE} run --rm --service-ports ${CONTAINER_NAME} /usr/bin/start-pocketmine"

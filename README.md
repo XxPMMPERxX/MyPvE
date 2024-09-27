@@ -22,7 +22,7 @@ cp .env.example .env
     ```
     **その他**
     ```shell
-    docker compose run --rm pmmp /usr/bin/start-pocketmine
+    docker compose run --rm --service-ports pmmp /usr/bin/start-pocketmine
     ```
 
 ![alt text](image.png)
