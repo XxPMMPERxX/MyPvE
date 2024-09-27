@@ -12,6 +12,17 @@ cp .env.example .env
 ```
 
 3. 開発サーバ起動
-```shell
-docker compose run pmmp /usr/bin/start-pocketmine
-```
+    **Windows**
+    ```ps
+    ./dev-server.ps1
+    ```
+    **Mac/Linux**
+    ```shell
+    ./dev-server.sh
+    ```
+    **その他**
+    ```shell
+    docker compose run pmmp /usr/bin/start-pocketmine
+    ```
+
+![alt text](image.png)

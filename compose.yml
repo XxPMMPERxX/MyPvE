@@ -1,5 +1,6 @@
 services:
   pmmp:
+    container_name: ${CONTAINER_NAME:-pmmp}
     image: pmmp/pocketmine-mp:latest
     ports:
       - ${PORT:-19132}:19132/udp
