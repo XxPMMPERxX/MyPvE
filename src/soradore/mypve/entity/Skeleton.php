@@ -8,8 +8,10 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\nbt\tag\CompoundTag;
 
-class Skeleton extends Living {
+class Skeleton extends Living
+{
 
     private $target = null;
     private $isNeutral = true;
@@ -23,7 +25,7 @@ class Skeleton extends Living {
     protected function getInitialSizeInfo() : EntitySizeInfo{
 		return new EntitySizeInfo(1.8, 0.6); //TODO: eye height ??
 	}
-    
+
     public function getName() : string{
 	    return "Skeleton";
     }
@@ -48,7 +50,18 @@ class Skeleton extends Living {
         $this->attkTime -= $tickDiff;
         $this->coolTime -= $tickDiff;
 
-        //$this->setNameTag("attk: " . $this->attkTime);
+        foreach ($world->getNearbyEntities($this->getBoundingBox(), $this) as $entity) {
+            if ($entity === $this || $entity instanceof Player) continue;
+
+            $entity->setMotion(
+                $entity->location->asVector3()->subtract(
+                    $this->location->getX(),
+                    $this->location->getY(),
+                    $this->location->getZ()
+                )->divide(3.0)
+            );
+        }
+
         if($this->attkTime > 0)
             return false;
         else
@@ -68,6 +81,12 @@ class Skeleton extends Living {
         }
 
         $target = $this->getTarget();
+
+        // プレイヤーがいなくなったらターゲットをnullに
+        if($target->isClosed()) {
+            $this->setTarget(null);
+        }
+
         if(!($target instanceof Player))
             return $hasUpdate;
         
@@ -76,7 +95,7 @@ class Skeleton extends Living {
 
         if($this->location->distance($target->location) <= 1){
             if($this->coolTime < 0){
-                $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, 3);;
+                $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, 3);
                 $target->attack($ev);
                 $this->coolTime = 23;
             }
@@ -113,6 +132,7 @@ class Skeleton extends Living {
                 }
             }
         }
+
         parent::attack($source);
         if($this->attkTime <= 0) {
             $this->attkTime = 15;
@@ -122,8 +142,9 @@ class Skeleton extends Living {
 
     public function jump(): void
     {
-        if($this->onGround)
+        if($this->onGround) {
             $this->motion->y = 0.5;
+        }
     }
 
 
@@ -131,18 +152,18 @@ class Skeleton extends Living {
     {
         $dv = $this->getDirectionVector()->multiply(1);
         $checkPos = $this->location->add($dv->x, 0, $dv->z)->floor();
-        if($this->getWorld()->getBlockAt($checkPos->x, $this->location->y+1, $checkPos->z)->isSolid())
+        if($this->getWorld()->getBlockAt((int) $checkPos->x, (int) $this->location->y + 1,  (int)$checkPos->z)->isSolid())
         {
             return;
         }
-        if($this->getWorld()->getBlockAt($checkPos->x, $this->location->y, $checkPos->z)->isSolid())
+        if($this->getWorld()->getBlockAt((int) $checkPos->x, (int) $this->location->y, (int) $checkPos->z)->isSolid())
         {
             $this->jump();
         }
     }
 
 
-    public function setTarget(Player $player)
+    public function setTarget(?Player $player)
     {
         $this->isNeutral = false;
         $this->target = $player;
