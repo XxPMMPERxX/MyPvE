@@ -9,7 +9,6 @@ use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemTypeIds;
 use pocketmine\item\SpawnEgg;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginLogger;
 use pocketmine\world\World;
@@ -20,6 +19,7 @@ use soradore\mypve\item\ItemRegister;
 class Main extends PluginBase
 {
     public static $baseDir = '/';
+    public static $baseNamespace = __NAMESPACE__;
     public static ?PluginLogger $logger = null;
 
     public function onEnable(): void

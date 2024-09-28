@@ -3,23 +3,13 @@
 namespace soradore\mypve\utils;
 
 use Closure;
-use pocketmine\utils\SingletonTrait;
 use soradore\mypve\Main;
 
 class ClassFinder
 {
-    use SingletonTrait;
-
-    public static $base_namespace;
-
-    public function __construct()
+    public static function getClassesFromNamespace(?string $namespace = null, ?Closure $filter = null)
     {
-        self::$base_namespace = str_replace('utils', '', __NAMESPACE__);
-    }
-
-    public function getClassesFromNamespace(?string $namespace = null, ?Closure $filter = null)
-    {
-        $namespace ??= self::$base_namespace;
+        $namespace ??= Main::$baseNamespace;
 
         $dir = Main::$baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
 

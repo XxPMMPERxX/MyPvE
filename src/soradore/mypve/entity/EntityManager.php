@@ -29,13 +29,12 @@ final class EntityManager
 
     public static function autoRegister()
     {
-        $classList = ClassFinder::getInstance()
-            ->getClassesFromNamespace(
-                __NAMESPACE__,
-                function ($class) {
-                    return in_array(Entity::class, class_parents($class));
-                }
-            );
+        $classList = ClassFinder::getClassesFromNamespace(
+            __NAMESPACE__,
+            function ($class) {
+                return in_array(Entity::class, class_parents($class));
+            }
+        );
         
         foreach ($classList as $class) {
             $shortName = (new \ReflectionClass($class))->getShortName();
