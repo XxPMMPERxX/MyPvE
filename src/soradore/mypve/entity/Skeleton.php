@@ -8,6 +8,7 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\world\particle\FlameParticle;
 
 class Skeleton extends Living
 {
@@ -91,7 +92,22 @@ class Skeleton extends Living
             return $hasUpdate;
         
         $speed = $this->getSpeed();
-        $this->lookAt($target->location);
+        $paths = PathFinder::calcPath($this->getPosition(), $target->getPosition());
+        $tempTarget = $paths[0] ?? null;
+
+
+        if (!$tempTarget) {
+            return $hasUpdate;
+        }
+
+        foreach ($paths as $path) {
+            $world->addParticle(
+                $path->add(0, 1, 0),
+                new FlameParticle()
+            );
+        }
+
+        $this->lookAt($tempTarget);
 
         if($this->location->distance($target->location) <= 1){
             if($this->coolTime < 0){
