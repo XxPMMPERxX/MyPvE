@@ -11,28 +11,24 @@ use pocketmine\item\SpawnEgg;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\plugin\PluginBase;
+use pocketmine\plugin\PluginLogger;
 use pocketmine\world\World;
-use soradore\mypve\entity\EntityRegister;
+use soradore\mypve\entity\EntityManager;
 use soradore\mypve\entity\Skeleton;
 use soradore\mypve\item\ItemRegister;
 
 class Main extends PluginBase
 {
+    public static $baseDir = '/';
+    public static ?PluginLogger $logger = null;
+
     public function onEnable(): void
     {
-        self::registerEntities();
-        self::registerItems();
-    }
+        self::$baseDir = $this->getFile() . 'src/';
+        self::$logger = $this->getLogger();
 
-    protected static function registerEntities()
-    {
-        EntityRegister::register(
-            Skeleton::class,
-            [
-                'Skeleton',
-                EntityIds::SKELETON,
-            ]
-        );
+        EntityManager::autoRegister();
+        self::registerItems();
     }
 
     protected static function registerItems()

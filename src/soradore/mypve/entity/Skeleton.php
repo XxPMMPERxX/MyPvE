@@ -8,11 +8,9 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\nbt\tag\CompoundTag;
 
 class Skeleton extends Living
 {
-
     private $target = null;
     private $isNeutral = true;
 

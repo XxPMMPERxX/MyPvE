@@ -6,9 +6,12 @@ use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\EntityFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\entity\Entity;
+use pocketmine\utils\TextFormat;
 use pocketmine\world\World;
+use soradore\mypve\Main;
+use soradore\mypve\utils\ClassFinder;
 
-final class EntityRegister
+final class EntityManager
 {
     public static function register(string $entityClassName, array $saveNames)
     {
@@ -24,5 +27,27 @@ final class EntityRegister
         );
     }
 
+    public static function autoRegister()
+    {
+        $classList = ClassFinder::getInstance()
+            ->getClassesFromNamespace(
+                __NAMESPACE__,
+                function ($class) {
+                    return in_array(Entity::class, class_parents($class));
+                }
+            );
+        
+        foreach ($classList as $class) {
+            $shortName = (new \ReflectionClass($class))->getShortName();
 
+            self::register(
+                $class,
+                [$shortName, $class::getNetworkTypeId()]
+            );
+
+            Main::$logger?->info(
+                TextFormat::AQUA . $shortName . TextFormat::WHITE . ' が登録されました'
+            );
+        }
+    }
 }
