@@ -92,6 +92,7 @@ class Skeleton extends Living
             return $hasUpdate;
         
         $speed = $this->getSpeed();
+
         $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
 
 
@@ -100,10 +101,10 @@ class Skeleton extends Living
         }
 
         
-        $world->addParticle(
+        /* $world->addParticle(
             $node->getPosition()->add(0.5, 1, 0.5),
             new FlameParticle(),
-        );
+        ); */
 
         $this->lookAt($node->getPosition()->add(0.5, 0, 0.5));
 

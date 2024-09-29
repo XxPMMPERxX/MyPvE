@@ -3,6 +3,7 @@
 namespace soradore\mypve\entity;
 
 use pocketmine\math\Facing;
+use pocketmine\world\particle\RedstoneParticle;
 use pocketmine\world\Position;
 
 /**
@@ -18,7 +19,7 @@ class PathFinder
         $start = Position::fromObject($start->floor(), $world);
         $target = Position::fromObject($target->floor(), $world);
 
-        $limit = 10;
+        $limit = PHP_INT_MAX;
 
         $opened = new NodeList();
         $closed = new NodeList();
@@ -26,7 +27,8 @@ class PathFinder
         $opened->push(new Node($start, 0, $start->distance($target)));
 
         while(--$limit > 0) {
-            if ($opened->count() <= 0) {
+            // var_dump($opened->count());
+            if ($opened->count() <= 0 || $opened->count() >= 30) {
                 break;
             }
 
@@ -47,11 +49,10 @@ class PathFinder
 
             $roundNodes = $node->getRoundNodes($node->getPosition());
 
-
             foreach ($roundNodes as $roundNode) {
                 $roundPosition = $roundNode->getPosition();
 
-                $fn = $node->gn + abs($roundPosition->y - $node->getPosition()->y) + $roundPosition->distance($target);
+                $fn = $node->gn + $roundPosition->distance($target);
 
                 if (!$opened->has($roundNode) && !$closed->has($roundNode)) {
                     $roundNode->fn = $fn;
@@ -135,9 +136,18 @@ class Node
 
             $block = $world->getBlock($side);
             // 通れない場合は除外
-            if ($block->isSolid() && $block->getSide(Facing::UP)->isSolid()) {
+            if ($block->getSide(Facing::UP)->isSolid()) {
                 continue;
             }
+
+            /** 二段以上の穴があれば通れない */
+            /* if (!$block->isSolid() && !$block->getSide(Facing::DOWN)->isSolid() && !$block->getSide(Facing::DOWN, 2)->isSolid()) {
+                $world->addParticle(
+                    $block->getPosition()->add(0.5, 0.5, 0.5),
+                    new RedstoneParticle(),
+                );
+                continue;
+            } */
 
             // 段差があり、段差の上が通れない場合は除外
             if ($block->isSolid() && ($block->getSide(Facing::UP)->isSolid() || $block->getSide(Facing::UP, 2)->isSolid())) {
