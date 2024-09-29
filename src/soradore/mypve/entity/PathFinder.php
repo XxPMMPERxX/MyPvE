@@ -140,14 +140,14 @@ class Node
                 continue;
             }
 
-            /** 二段以上の穴があれば通れない */
-            /* if (!$block->isSolid() && !$block->getSide(Facing::DOWN)->isSolid() && !$block->getSide(Facing::DOWN, 2)->isSolid()) {
+            /** 二段以上の穴があれば通れないので除外 */
+            if (!$block->isSolid() && !$block->getSide(Facing::DOWN)->isSolid() && !$block->getSide(Facing::DOWN, 2)->isSolid()) {
                 $world->addParticle(
                     $block->getPosition()->add(0.5, 0.5, 0.5),
                     new RedstoneParticle(),
                 );
                 continue;
-            } */
+            }
 
             // 段差があり、段差の上が通れない場合は除外
             if ($block->isSolid() && ($block->getSide(Facing::UP)->isSolid() || $block->getSide(Facing::UP, 2)->isSolid())) {
