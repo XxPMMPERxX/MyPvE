@@ -191,6 +191,10 @@ class NodeList
         return count($this->list);
     }
 
+    /**
+     * Node を見つけて返す
+     * ない場合は null
+     */
     public function find(Node $needle)
     {
         $position = $needle->getPosition();
@@ -204,11 +208,18 @@ class NodeList
         return null;
     }
 
+    /**
+     * Node が存在するかどうか
+     */
     public function has(Node $needle)
     {
         return !!$this->find($needle);
     }
     
+
+    /**
+     * Node を削除
+     */
     public function remove(Node $needle)
     {
         $newList = array_filter($this->list, function (Node $node) use ($needle) {
