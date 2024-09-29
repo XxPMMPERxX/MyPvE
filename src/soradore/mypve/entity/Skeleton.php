@@ -15,7 +15,7 @@ class Skeleton extends Living
     private $target = null;
     private $isNeutral = true;
 
-    private $speed = 0.28;
+    private $speed = 0.21;
     private $coolTime = 0;
     private $attkTime = 0;
 
@@ -92,22 +92,14 @@ class Skeleton extends Living
             return $hasUpdate;
         
         $speed = $this->getSpeed();
-        $paths = PathFinder::calcPath($this->getPosition(), $target->getPosition());
-        $tempTarget = $paths[0] ?? null;
+        $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
 
 
-        if (!$tempTarget) {
+        if (!$node) {
             return $hasUpdate;
         }
 
-        foreach ($paths as $path) {
-            $world->addParticle(
-                $path->add(0, 1, 0),
-                new FlameParticle()
-            );
-        }
-
-        $this->lookAt($tempTarget);
+        $this->lookAt($node->getPosition()->add(0.5, 0, 0.5));
 
         if($this->location->distance($target->location) <= 1){
             if($this->coolTime < 0){

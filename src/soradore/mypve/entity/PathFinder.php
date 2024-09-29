@@ -3,6 +3,8 @@
 namespace soradore\mypve\entity;
 
 use pocketmine\math\Facing;
+use pocketmine\world\particle\FlameParticle;
+use pocketmine\world\particle\LavaDripParticle;
 use pocketmine\world\Position;
 
 class PathFinder
@@ -10,53 +12,117 @@ class PathFinder
     public static function calcPath(Position $start, Position $target)
     {
         $world = $start->getWorld();
-        $stack = [];
-        $opened = [];
-        $limit = 200;
 
-        $current = $start;
+        $start = Position::fromObject($start->floor(), $world);
+        $target = Position::fromObject($target->floor(), $world);
+
+        $limit = 10;
+
+        $opened = new NodeList();
+        $closed = new NodeList();
+        
+        $opened->push(new Node($start, 0, $start->distance($target)));
+
         while(--$limit > 0) {
-
-            $rounds = self::getRounds($current);
-            $rounds = array_filter($rounds, function ($position) use ($stack, $opened) {
-                return !in_array($position, $stack) && !in_array($position, array_column($opened, 0));
-            });
-
-            foreach ($rounds as $position) {
-                $cost = self::calcCost(count($stack), $position->distance($target), $position->y - $current->y);
-                $opened[] = [
-                    $position,
-                    $cost,
-                ];
+            if ($opened->count() <= 0) {
+                return null;
             }
 
-            /** コストでソート */
-            usort($opened, function ($openedPositionA, $openedPositionB) {
-                return $openedPositionA[1] < $openedPositionB[1] ? -1 : 1;
-            });
+            $node = $opened->pop();
 
-            /** 一番コストが低いのを取得 */
-            $next = $opened[0][0] ?? null;
-
-            if (!$next) {
-                return [];
+            if ($node->getPosition()->equals($target)) {
+                $parent = $node->getParent();
+                while (($parent = $parent?->getParent()) !== null) {
+                    $world->addParticle(
+                        $parent->getPosition()->add(0.5, 1, 0.5),
+                        new FlameParticle(),
+                    );
+                }
+                return $node;
             }
 
-            $next = Position::fromObject($next->floor()->add(0.5, 0, 0.5), $world);
-            $stack[] = $next;
+            $closed->push($node);
 
-            $current = $next;
+            $roundNodes = $node->getRoundNodes($node->getPosition());
+
+
+            foreach ($roundNodes as $roundNode) {
+                $roundPosition = $roundNode->getPosition();
+
+                $fn = $node->gn + abs($roundPosition->y - $node->getPosition()->y) + $roundPosition->distance($target);
+
+                if (!$opened->has($roundNode) && !$closed->has($roundNode)) {
+                    $roundNode->fn = $fn;
+                    $roundNode->setParent($node);
+                    $opened->push($roundNode);
+
+                    continue;
+                }
+
+                if (($old = $opened->find($roundNode)) !== null) {
+                    if ($fn < $old->fn) {
+                        $old->fn = $fn;
+                        $old->setParent($node);
+
+                        $opened->orderByCost();
+                    }
+
+                    continue;
+                }
+
+                if (($old = $closed->find($roundNode)) !== null) {
+                    if ($fn < $old->fn) {
+                        $old->fn = $fn;
+                        $old->setParent($node);
+
+                        $opened->orderByCost();
+
+                        $closed->remove($old);
+                    }
+                }
+            }
         }
 
-        return $stack;
+        return null;
+    }
+}
+
+class Node
+{
+
+    public function __construct(
+        public Position $position, 
+        public $gn = 0, 
+        public float $fn = 0, 
+        public ?Node $parent = null
+    ) {
+        
+    }
+
+    public function getPosition()
+    {
+        return $this->position;
+    }
+
+    public function setParent(Node $parent)
+    {
+        $this->parent = $parent;
+    }
+
+    public function getParent()
+    {
+        return $this->parent;
     }
 
     /**
-     * @return Position[]
+     * @return Node[]
      */
-    public static function getRounds(Position $center)
+    public function getRoundNodes()
     {
-        $world = $center->getWorld();
+        $position = $this->getPosition();
+        $world = $this->getPosition()->getWorld();
+
+        $center = Position::fromObject($position->floor(), $world);
 
         $rounds = [];
         foreach (Facing::HORIZONTAL as $side) {
@@ -78,14 +144,81 @@ class PathFinder
                 $side = $block->getSide(Facing::UP)->getPosition();
             }
 
-            $rounds[] = $side;
+            $rounds[] = new Node($side);
         }
 
         return $rounds;
     }
+}
 
-    public static function calcCost(int $step, float $distance, float $yDiff)
+class NodeList
+{
+    /** @var Node[] */
+    protected $list = [];
+
+    public function __construct(array $list = [])
     {
-        return $step + $distance + abs($yDiff);
+        $this->list = $list;
+        $this->orderByCost();
+    }
+
+    public function push(Node $node)
+    {
+        $this->list[] = $node;
+        $this->orderByCost();
+    }
+
+    /**
+     * @return Node
+     */
+    public function pop()
+    {
+        return array_pop($this->list);
+    }
+
+    public function orderByCost()
+    {
+        usort($this->list, function (Node $nodeA, Node $nodeB) {
+            return $nodeB->fn <=> $nodeA->fn;
+        });
+    }
+
+    /**
+     * @return int count
+     */
+    public function count()
+    {
+        return count($this->list);
+    }
+
+    public function find(Node $needle)
+    {
+        $position = $needle->getPosition();
+
+        foreach ($this->list as $node) {
+            if ($node->getPosition()->equals($position)) {
+                return $node;
+            }
+        }
+
+        return null;
+    }
+
+    public function has(Node $needle)
+    {
+        return !!$this->find($needle);
+    }
+    
+    public function remove(Node $needle)
+    {
+        $newList = array_filter($this->list, function (Node $node) use ($needle) {
+            $position = $needle->getPosition();
+
+            return !$node->getPosition()->equals($position);
+        });
+
+        $this->list = $newList;
+
+        $this->orderByCost();
     }
 }
