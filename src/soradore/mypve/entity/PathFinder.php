@@ -142,10 +142,6 @@ class Node
 
             /** 二段以上の穴があれば通れないので除外 */
             if (!$block->isSolid() && !$block->getSide(Facing::DOWN)->isSolid() && !$block->getSide(Facing::DOWN, 2)->isSolid()) {
-                $world->addParticle(
-                    $block->getPosition()->add(0.5, 0.5, 0.5),
-                    new RedstoneParticle(),
-                );
                 continue;
             }
 
