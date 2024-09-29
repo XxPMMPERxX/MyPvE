@@ -3,10 +3,12 @@
 namespace soradore\mypve\entity;
 
 use pocketmine\math\Facing;
-use pocketmine\world\particle\FlameParticle;
-use pocketmine\world\particle\LavaDripParticle;
 use pocketmine\world\Position;
 
+/**
+ * A* アルゴリズムでパスを計算、一番近い次の目標を返す
+ * Ref: https://ja.wikipedia.org/wiki/A*
+ */
 class PathFinder
 {
     public static function calcPath(Position $start, Position $target)
@@ -16,7 +18,7 @@ class PathFinder
         $start = Position::fromObject($start->floor(), $world);
         $target = Position::fromObject($target->floor(), $world);
 
-        $limit = PHP_INT_MAX;
+        $limit = 10;
 
         $opened = new NodeList();
         $closed = new NodeList();
@@ -25,7 +27,7 @@ class PathFinder
 
         while(--$limit > 0) {
             if ($opened->count() <= 0) {
-                return null;
+                break;
             }
 
             $node = $opened->pop();
@@ -82,8 +84,11 @@ class PathFinder
                 }
             }
         }
-
-        return null;
+        
+        /**
+         * 見つからない場合はターゲットに向かって直進だ!
+         */
+        return new Node($target);
     }
 }
 
