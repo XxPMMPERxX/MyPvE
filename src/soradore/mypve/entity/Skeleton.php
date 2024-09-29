@@ -99,6 +99,12 @@ class Skeleton extends Living
             return $hasUpdate;
         }
 
+        
+        $world->addParticle(
+            $node->getPosition()->add(0.5, 1, 0.5),
+            new FlameParticle(),
+        );
+
         $this->lookAt($node->getPosition()->add(0.5, 0, 0.5));
 
         if($this->location->distance($target->location) <= 1){
@@ -138,6 +144,8 @@ class Skeleton extends Living
                 if(!$this->hasTarget()) {
                     $this->setTarget($damager);
                 }
+
+                // PathFinder::calcPath($this->getPosition(), $damager->getPosition());
             }
         }
 

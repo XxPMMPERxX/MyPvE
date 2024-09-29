@@ -16,7 +16,7 @@ class PathFinder
         $start = Position::fromObject($start->floor(), $world);
         $target = Position::fromObject($target->floor(), $world);
 
-        $limit = 10;
+        $limit = PHP_INT_MAX;
 
         $opened = new NodeList();
         $closed = new NodeList();
@@ -31,14 +31,14 @@ class PathFinder
             $node = $opened->pop();
 
             if ($node->getPosition()->equals($target)) {
-                $parent = $node->getParent();
-                while (($parent = $parent?->getParent()) !== null) {
-                    $world->addParticle(
-                        $parent->getPosition()->add(0.5, 1, 0.5),
-                        new FlameParticle(),
-                    );
+                $paths = [];
+                while (($parent = $node?->getParent()) !== null) {
+                    $paths[] = $node;
+                    $node = $parent;
                 }
-                return $node;
+
+                // return $paths[count($paths)-2] ?? null;
+                return end($paths);
             }
 
             $closed->push($node);
