@@ -95,11 +95,17 @@ class Skeleton extends Living
 
         $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
 
-
         if (!$node) {
             return $hasUpdate;
         }
 
+        /* $dx = $node->getPosition()->x - $this->location->x;
+        $dz = $node->getPosition()->z - $this->location->z;
+
+        $yaw = atan2($dz, $dx) / M_PI * 180 - 90;
+		if($yaw < 0){
+			$yaw += 360.0;
+		} */
         
         /* $world->addParticle(
             $node->getPosition()->add(0.5, 1, 0.5),

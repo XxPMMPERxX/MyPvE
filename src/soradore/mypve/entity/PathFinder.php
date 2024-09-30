@@ -3,6 +3,7 @@
 namespace soradore\mypve\entity;
 
 use pocketmine\math\Facing;
+use pocketmine\world\particle\FlameParticle;
 use pocketmine\world\particle\RedstoneParticle;
 use pocketmine\world\Position;
 
@@ -36,12 +37,12 @@ class PathFinder
 
             if ($node->getPosition()->equals($target)) {
                 $paths = [];
+                
                 while (($parent = $node?->getParent()) !== null) {
                     $paths[] = $node;
                     $node = $parent;
                 }
 
-                // return $paths[count($paths)-2] ?? null;
                 return end($paths);
             }
 
@@ -131,9 +132,24 @@ class Node
         $center = Position::fromObject($position->floor(), $world);
 
         $rounds = [];
-        foreach (Facing::HORIZONTAL as $side) {
-            $side = $center->getSide($side);
 
+        $sides = array_map(fn ($facing) => $center->getSide($facing), Facing::HORIZONTAL);
+
+        /* foreach ([Facing::SOUTH, Facing::NORTH] as $south_north) {
+            foreach ([Facing::WEST, Facing::EAST] as $west_east) {
+                $offset = [
+                    Facing::OFFSET[$south_north][0] + Facing::OFFSET[$west_east][0],
+                    Facing::OFFSET[$south_north][1] + Facing::OFFSET[$west_east][1],
+                    Facing::OFFSET[$south_north][2] + Facing::OFFSET[$west_east][2]     
+                ];
+
+                $sides[] = $center->add($offset[0], $offset[1], $offset[2]);
+            }
+        } */
+
+        foreach ($sides as $side) {
+            $side = Position::fromObject($side, $world);
+            
             $block = $world->getBlock($side);
             // 通れない場合は除外
             if ($block->getSide(Facing::UP)->isSolid()) {

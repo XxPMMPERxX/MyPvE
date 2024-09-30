@@ -14,6 +14,7 @@ use pocketmine\plugin\PluginLogger;
 use pocketmine\world\World;
 use soradore\mypve\entity\EntityManager;
 use soradore\mypve\entity\Skeleton;
+use soradore\mypve\item\ItemManager;
 use soradore\mypve\item\ItemRegister;
 
 class Main extends PluginBase
@@ -28,21 +29,6 @@ class Main extends PluginBase
         self::$logger = $this->getLogger();
 
         EntityManager::autoRegister();
-        self::registerItems();
-    }
-
-    protected static function registerItems()
-    {
-        ItemRegister::register(
-            new class(new ItemIdentifier(ItemTypeIds::newId()), "Skeleton Spawn Egg") extends SpawnEgg {
-                public function createEntity(World $world, Vector3 $pos, float $yaw, float $pitch): Entity
-                {
-                    return new Skeleton(Location::fromObject($pos, $world, $yaw, $pitch));
-                }
-            },
-            ItemTypeNames::SKELETON_SPAWN_EGG,
-            'skeleton_spawn_egg',
-            true,
-        );
+        ItemManager::autoRegister();
     }
 }
