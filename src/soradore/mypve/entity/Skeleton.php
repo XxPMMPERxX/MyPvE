@@ -8,16 +8,18 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\world\particle\FlameParticle;
 
 class Skeleton extends Living
 {
     private $target = null;
     private $isNeutral = true;
 
-    private $speed = 0.21;
+    private $speed = 0.28;
     private $coolTime = 0;
     private $attkTime = 0;
+
+    /* private $nodeCoolTime = 0;
+    private $node = null; */
 
     public static function getNetworkTypeId() : string{ return EntityIds::SKELETON; }
 
@@ -93,24 +95,23 @@ class Skeleton extends Living
         
         $speed = $this->getSpeed();
 
+        /*if (--$this->nodeCoolTime <= 0 || !$this->node) {
+            $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
+
+            if (!$node) {
+                return $hasUpdate;
+            }
+
+            $this->node = $node;
+            $this->nodeCoolTime = 5;
+        }*/
+
         $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
+
 
         if (!$node) {
             return $hasUpdate;
         }
-
-        /* $dx = $node->getPosition()->x - $this->location->x;
-        $dz = $node->getPosition()->z - $this->location->z;
-
-        $yaw = atan2($dz, $dx) / M_PI * 180 - 90;
-		if($yaw < 0){
-			$yaw += 360.0;
-		} */
-        
-        /* $world->addParticle(
-            $node->getPosition()->add(0.5, 1, 0.5),
-            new FlameParticle(),
-        ); */
 
         $this->lookAt($node->getPosition()->add(0.5, 0, 0.5));
 
@@ -121,19 +122,12 @@ class Skeleton extends Living
                 $this->coolTime = 23;
             }
             return $hasUpdate;
-        } else if ($this->location->distance($target->location) >= 5) {//5ブロックより遠ければ
-            $preTarget = $this->findClosestPlayer(10);//10ブロック以内の一番近いプレイヤーを取得
-            if ($preTarget === null) {//プレイヤーが近くにいなければ
-                $this->target = null;//ターゲットを空にして、処理をやめる。
-                return $hasUpdate;
-            } else {//プレイヤーが存在すれば
-                $this->target = $preTarget;//ターゲットを設定
-            }
         }
-            
+
 
         $moveX = sin(-deg2rad($this->location->yaw)) * $speed;
         $moveZ = cos(-deg2rad($this->location->yaw)) * $speed;
+
         $this->checkFront();
         $this->motion->x = $moveX;
         $this->motion->z = $moveZ;
@@ -151,8 +145,6 @@ class Skeleton extends Living
                 if(!$this->hasTarget()) {
                     $this->setTarget($damager);
                 }
-
-                // PathFinder::calcPath($this->getPosition(), $damager->getPosition());
             }
         }
 
@@ -176,11 +168,11 @@ class Skeleton extends Living
     {
         $dv = $this->getDirectionVector()->multiply(1);
         $checkPos = $this->location->add($dv->x, 0, $dv->z)->floor();
-        if($this->getWorld()->getBlockAt((int) $checkPos->x, (int) $this->location->y + 1,  (int)$checkPos->z)->isSolid())
+        if($this->getWorld()->getBlock($checkPos->add(0, 1, 0))->isSolid())
         {
             return;
         }
-        if($this->getWorld()->getBlockAt((int) $checkPos->x, (int) $this->location->y, (int) $checkPos->z)->isSolid())
+        if($this->getWorld()->getBlock($checkPos)->isSolid())
         {
             $this->jump();
         }

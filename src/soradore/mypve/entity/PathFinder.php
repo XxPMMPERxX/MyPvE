@@ -3,7 +3,7 @@
 namespace soradore\mypve\entity;
 
 use pocketmine\math\Facing;
-use pocketmine\world\particle\FlameParticle;
+use pocketmine\world\particle\LavaDripParticle;
 use pocketmine\world\particle\RedstoneParticle;
 use pocketmine\world\Position;
 
@@ -20,6 +20,18 @@ class PathFinder
         $start = Position::fromObject($start->floor(), $world);
         $target = Position::fromObject($target->floor(), $world);
 
+        /*
+        TODO: ターゲットが浮いているときの挙動改善
+        $targetFloorBlock = $world->getBlock($target)->getSide(Facing::DOWN);
+        if (!$targetFloorBlock->isSolid()) {
+            foreach ($targetFloorBlock->getHorizontalSides() as $horizontalSideBlock) {
+                if ($horizontalSideBlock->isSolid()) {
+                    $target = $horizontalSideBlock->getPosition();
+                }
+            }
+        } */
+
+
         $limit = PHP_INT_MAX;
 
         $opened = new NodeList();
@@ -28,8 +40,10 @@ class PathFinder
         $opened->push(new Node($start, 0, $start->distance($target)));
 
         while(--$limit > 0) {
-            // var_dump($opened->count());
-            if ($opened->count() <= 0 || $opened->count() >= 30) {
+            /**
+             * NOTE: 到達可能な経路が見つかるまで範囲を広げてしまうので、ある程度で終わらせるように
+             */
+            if ($opened->count() <= 0 || $opened->count() >= 40) {
                 break;
             }
 
@@ -41,6 +55,11 @@ class PathFinder
                 while (($parent = $node?->getParent()) !== null) {
                     $paths[] = $node;
                     $node = $parent;
+
+                    $world->addParticle(
+                        $node->getPosition()->add(0.5, 1, 0.5),
+                        new RedstoneParticle(),
+                    );
                 }
 
                 return end($paths);
@@ -67,8 +86,6 @@ class PathFinder
                     if ($fn < $old->fn) {
                         $old->fn = $fn;
                         $old->setParent($node);
-
-                        $opened->orderByCost();
                     }
 
                     continue;
@@ -78,8 +95,6 @@ class PathFinder
                     if ($fn < $old->fn) {
                         $old->fn = $fn;
                         $old->setParent($node);
-
-                        $opened->orderByCost();
 
                         $closed->remove($old);
                     }
@@ -99,7 +114,7 @@ class Node
 
     public function __construct(
         public Position $position, 
-        public $gn = 0, 
+        public float $gn = 0, 
         public float $fn = 0, 
         public ?Node $parent = null
     ) {
@@ -133,9 +148,11 @@ class Node
 
         $rounds = [];
 
+        // 前・右・下・左
         $sides = array_map(fn ($facing) => $center->getSide($facing), Facing::HORIZONTAL);
 
-        /* foreach ([Facing::SOUTH, Facing::NORTH] as $south_north) {
+        // 右前・右下・左下・左上
+        foreach ([Facing::SOUTH, Facing::NORTH] as $south_north) {
             foreach ([Facing::WEST, Facing::EAST] as $west_east) {
                 $offset = [
                     Facing::OFFSET[$south_north][0] + Facing::OFFSET[$west_east][0],
@@ -145,10 +162,11 @@ class Node
 
                 $sides[] = $center->add($offset[0], $offset[1], $offset[2]);
             }
-        } */
+        }
 
-        foreach ($sides as $side) {
+        foreach ($sides as $key => $side) {
             $side = Position::fromObject($side, $world);
+            $isDiagonal = $key >= 4;
             
             $block = $world->getBlock($side);
             // 通れない場合は除外
@@ -156,9 +174,32 @@ class Node
                 continue;
             }
 
+            if ($isDiagonal) {
+                /**
+                 * 斜め時周りにブロックがあれば通れないので除外
+                 */
+                $checkAround = function ($block) {
+                    foreach ($block->getHorizontalSides() as $horizontalSideBlock) {
+                        if ($horizontalSideBlock->isSolid()) {
+                            return false;
+                        }
+                    }
+                    return true;
+                };
+
+                if (!$checkAround($block)) {
+                    continue;
+                }
+            }
+
             /** 二段以上の穴があれば通れないので除外 */
             if (!$block->isSolid() && !$block->getSide(Facing::DOWN)->isSolid() && !$block->getSide(Facing::DOWN, 2)->isSolid()) {
                 continue;
+            }
+
+            /** 一段の穴があれば下の座標をセット */
+            if (!$block->isSolid() && !$block->getSide(Facing::DOWN)->isSolid()) {
+                $side = $block->getSide(Facing::DOWN)->getPosition();
             }
 
             // 段差があり、段差の上が通れない場合は除外
@@ -186,13 +227,13 @@ class NodeList
     public function __construct(array $list = [])
     {
         $this->list = $list;
-        $this->orderByCost();
+        // $this->orderByCost();
     }
 
     public function push(Node $node)
     {
         $this->list[] = $node;
-        $this->orderByCost();
+        // $this->orderByCost();
     }
 
     /**
@@ -200,6 +241,7 @@ class NodeList
      */
     public function pop()
     {
+        $this->orderByCost();
         return array_pop($this->list);
     }
 
@@ -256,7 +298,5 @@ class NodeList
         });
 
         $this->list = $newList;
-
-        $this->orderByCost();
     }
 }
