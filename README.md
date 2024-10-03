@@ -24,5 +24,7 @@ cp .env.example .env
     ```shell
     docker compose run --rm --service-ports pmmp /usr/bin/start-pocketmine
     ```
+### docker以外
+普通に plugins/ に入れてもらえれば動くと思います。(Devtoolsなどは必要です)
 
 ![alt text](image.png)
