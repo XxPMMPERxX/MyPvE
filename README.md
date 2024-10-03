@@ -1,6 +1,6 @@
 # MyPvE
 
-### dockerで環境構築
+### dockerで環境構築【推奨】
 1. composerインストール（コード補完用）
 ```shell
 docker run --rm --interactive --tty --volume .:/app composer install
