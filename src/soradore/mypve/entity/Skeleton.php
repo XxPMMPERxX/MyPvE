@@ -8,7 +8,6 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\world\particle\RedstoneParticle;
 
 class Skeleton extends Living
 {
