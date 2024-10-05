@@ -11,7 +11,7 @@ class ClassFinder
     {
         $namespace ??= Main::$baseNamespace;
 
-        $dir = Main::$baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
+        $dir = Main::$baseDir . str_replace('\\', '/', $namespace);
 
         $iterator = new \RecursiveDirectoryIterator($dir);
         $iterator = new \RecursiveIteratorIterator($iterator);
