@@ -8,13 +8,14 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\world\particle\RedstoneParticle;
 
 class Skeleton extends Living
 {
     private $target = null;
     private $isNeutral = true;
 
-    private $speed = 0.28;
+    private $speed = 0.21;
     private $coolTime = 0;
     private $attkTime = 0;
 
@@ -48,6 +49,7 @@ class Skeleton extends Living
     {
         $world = $this->getWorld();
         $hasUpdate = parent::entityBaseTick($tickDiff);
+
         $this->attkTime -= $tickDiff;
         $this->coolTime -= $tickDiff;
 
@@ -92,22 +94,21 @@ class Skeleton extends Living
 
         if(!($target instanceof Player))
             return $hasUpdate;
-        
-        $speed = $this->getSpeed();
 
-        /*if (--$this->nodeCoolTime <= 0 || !$this->node) {
-            $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
+        /* if (--$this->nodeCoolTime <= 0 || !$this->node) {
+            $paths = PathFinder::calcPath($this->getPosition(), $target->getPosition());
+            $node = $paths[0] ?? null;
 
             if (!$node) {
                 return $hasUpdate;
             }
 
             $this->node = $node;
-            $this->nodeCoolTime = 5;
-        }*/
+            $this->nodeCoolTime = 20;
+        } */
 
-        $node = PathFinder::calcPath($this->getPosition(), $target->getPosition());
-
+        $paths = PathFinder::calcPath($this->getPosition(), $target->getPosition());
+        $node = $paths[0] ?? null;
 
         if (!$node) {
             return $hasUpdate;
@@ -124,6 +125,8 @@ class Skeleton extends Living
             return $hasUpdate;
         }
 
+
+        $speed = $this->getSpeed();
 
         $moveX = sin(-deg2rad($this->location->yaw)) * $speed;
         $moveZ = cos(-deg2rad($this->location->yaw)) * $speed;

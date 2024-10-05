@@ -3,7 +3,6 @@
 namespace soradore\mypve\entity;
 
 use pocketmine\math\Facing;
-use pocketmine\world\particle\LavaDripParticle;
 use pocketmine\world\particle\RedstoneParticle;
 use pocketmine\world\Position;
 
@@ -62,7 +61,7 @@ class PathFinder
                     );
                 }
 
-                return end($paths);
+                return array_reverse($paths);
             }
 
             $closed->push($node);
@@ -105,7 +104,7 @@ class PathFinder
         /**
          * 見つからない場合はターゲットに向かって直進だ!
          */
-        return new Node($target);
+        return [new Node($target)];
     }
 }
 
@@ -141,10 +140,10 @@ class Node
      */
     public function getRoundNodes()
     {
-        $position = $this->getPosition();
+        $center = $this->getPosition();
         $world = $this->getPosition()->getWorld();
 
-        $center = Position::fromObject($position->floor(), $world);
+        $center = Position::fromObject($center->floor(), $world);
 
         $rounds = [];
 
